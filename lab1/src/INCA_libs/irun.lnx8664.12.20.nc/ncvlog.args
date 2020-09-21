@@ -1,0 +1,20 @@
+//
+// File created by:  ncverilog
+// Do not modify this file
+//
+-XLMODE
+./INCA_libs/irun.lnx8664.12.20.nc
+-RUNMODE
+DE2_115/DE2_115.sv
+DE2_115/Debounce.sv
+DE2_115/SevenHexDecoder.sv
+Top_example.sv
+-CDSLIB
+./INCA_libs/irun.lnx8664.12.20.nc/cdsrun.lib
+-HDLVAR
+./INCA_libs/irun.lnx8664.12.20.nc/hdlrun.var
+-MESSAGES
+-UPDATE
+-XLLIBSTORE
+./INCA_libs/irun.lnx8664.12.20.nc/xllibs
+-ALLOWUNBOUND
