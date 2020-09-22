@@ -135,7 +135,7 @@ parameter B = 8'd15;
 
 
 // ===== Output Buffers =====
-logic [3:0] o_random_out_r, o_random_out_w;
+logic [7:0] o_random_out_r, o_random_out_w;
 
 // ===== Registers & Wires =====
 logic [1:0] state_r, state_w;
@@ -144,7 +144,7 @@ logic [3:0] upper_r, upper_w;
 logic [7:0] product;
 
 // ===== Output Assignments =====
-assign o_random_out = o_random_out_r;
+assign o_random_out = o_random_out_r[3:0];
 assign product = ((o_random_out_r << 3) + o_random_out_r + B) & 8'd15;
 
 // ===== Combinational Circuits =====
