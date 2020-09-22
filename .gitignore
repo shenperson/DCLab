@@ -17,3 +17,7 @@ verdiLog/
 .zshrc
 novas.conf
 novas.rc
+*/*/nWaveLog
+*/*/INCA_libs
+*.fsdb
+*.log
