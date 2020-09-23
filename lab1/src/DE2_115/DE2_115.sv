@@ -136,35 +136,70 @@ module DE2_115 (
 	inout [6:0] EX_IO
 );
 
-logic keydown;
-logic [3:0] random_value;
+logic start_keydown;
+logic stop_keydown;
+logic [3:0] random_value_0;
+logic [3:0] random_value_1;
+logic [3:0] random_value_2;
+logic [3:0] random_value_3;
 
 Debounce deb0(
 	.i_in(KEY[0]),
 	.i_rst_n(KEY[1]),
 	.i_clk(CLOCK_50),
-	.o_neg(keydown)
+	.o_neg(start_keydown)
+);
+
+Debounce deb1(
+	.i_in(KEY[2]),
+	.i_rst_n(KEY[1]),
+	.i_clk(CLOCK_50),
+	.o_neg(stop_keydown)
 );
 
 Top top0(
 	.i_clk(CLOCK_50),
 	.i_rst_n(KEY[1]),
-	.i_start(keydown),
-	.o_random_out(random_value)
+	.i_start(start_keydown),
+	.i_stop(stop_keydown),
+	.o_random_out_0(random_value_0),
+	.o_random_out_1(random_value_1),
+	.o_random_out_2(random_value_2),
+	.o_random_out_3(random_value_3)
 );
 
+// the current random number
 SevenHexDecoder seven_dec0(
-	.i_hex(random_value),
+	.i_hex(random_value_0),
 	.o_seven_ten(HEX1),
 	.o_seven_one(HEX0)
 );
 
-assign HEX2 = '1;
-assign HEX3 = '1;
-assign HEX4 = '1;
-assign HEX5 = '1;
-assign HEX6 = '1;
-assign HEX7 = '1;
+// 3 previous random number
+SevenHexDecoder seven_dec1(
+	.i_hex(random_value_1),
+	.o_seven_ten(HEX3),
+	.o_seven_one(HEX2)
+);
+
+SevenHexDecoder seven_dec2(
+	.i_hex(random_value_2),
+	.o_seven_ten(HEX5),
+	.o_seven_one(HEX4)
+);
+
+SevenHexDecoder seven_dec3(
+	.i_hex(random_value_3),
+	.o_seven_ten(HEX7),
+	.o_seven_one(HEX6)
+);
+
+// assign HEX2 = '1;
+// assign HEX3 = '1;
+// assign HEX4 = '1;
+// assign HEX5 = '1;
+// assign HEX6 = '1;
+// assign HEX7 = '1;
 
 `ifdef DUT_LAB1
 	initial begin
