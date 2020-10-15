@@ -1,11 +1,14 @@
-module Rsa256Core (
+module Rsa256Core #(
+	parameter TEXT_W = 256,
+	parameter TEXT_C = 8
+)(
 	input          i_clk,
 	input          i_rst,
 	input          i_start,
-	input  [255:0] i_a, // cipher text y
-	input  [255:0] i_d, // private key
-	input  [255:0] i_n,
-	output [255:0] o_a_pow_d, // plain text x
+	input  [TEXT_W - 1:0] i_a, // cipher text y
+	input  [TEXT_W - 1:0] i_d, // private key
+	input  [TEXT_W - 1:0] i_n,
+	output [TEXT_W - 1:0] o_a_pow_d, // plain text x
 	output         o_finished
 );
 
@@ -17,35 +20,37 @@ parameter S_MONT = 3'd2;
 parameter S_CALC = 3'd3;
 parameter S_DONE = 3'd4;
 
-logic   [2:0] state, state_n;
-logic         finished, finished_n;
-logic [255:0] y, y_n;
-logic         prep_start, prep_start_n;
-logic         mont_start, mont_start_n;
-logic   [8:0] counter, counter_n;
-logic [255:0] t, t_n;
-logic [255:0] m, m_n;
-logic [255:0] m_update, m_update_n;
-logic [255:0] t_square, t_square_n;
-logic         prep_done, mont_done, mont_done_m, mont_done_t;
-logic [255:0] t_start;
+logic          [2:0] state, state_n;
+logic                finished, finished_n;
+logic [TEXT_W - 1:0] y, y_n;
+logic                prep_start, prep_start_n;
+logic                mont_start, mont_start_n;
+logic     [TEXT_C:0] counter, counter_n;
+logic [TEXT_W - 1:0] t, t_n;
+logic [TEXT_W - 1:0] m, m_n;
+logic [TEXT_W - 1:0] m_update, m_update_n;
+logic [TEXT_W - 1:0] t_square, t_square_n;
+logic                prep_done, mont_done, mont_done_m, mont_done_t;
+logic [TEXT_W - 1:0] t_start;
 
 assign o_finished = finished;
 assign o_a_pow_d = m;
 assign mont_done = mont_done_m & mont_done_t;
 
-RsaPrep rsa_prep_0(
+RsaPrep # (.TEXT_W(TEXT_W), .TEXT_C(TEXT_C))
+rsa_prep_0(
 	.i_clk(i_clk),
 	.N({1'b0, i_n}),
-	.a({1'b1, {256{1'b0}}}),
+	.a({1'b1, {TEXT_W{1'b0}}}),
 	.b({1'b0, y}),
-	.k(9'd256),
+	.k(TEXT_W),
 	.i_start(prep_start),
 	.o_m(t_start),
 	.o_finished(prep_done)
 );
 
-RsaMont rsa_mont_0(
+RsaMont # (.TEXT_W(TEXT_W), .TEXT_C(TEXT_C))
+rsa_mont_0(
 	.i_clk(i_clk),
 	.N(i_n),
 	.a(m),
@@ -55,7 +60,8 @@ RsaMont rsa_mont_0(
 	.o_finished(mont_done_m)
 );
 
-RsaMont rsa_mont_1(
+RsaMont # (.TEXT_W(TEXT_W), .TEXT_C(TEXT_C))
+rsa_mont_1(
 	.i_clk(i_clk),
 	.N(i_n),
 	.a(t),
@@ -99,7 +105,7 @@ always_comb begin
 			end
 		end
 		S_CALC: begin
-			if (counter <= 255) begin
+			if (counter <= TEXT_W - 1) begin
 				counter_n = counter + 1;
 				state_n = S_MONT;
 				mont_start_n = 1'b1;
@@ -125,15 +131,15 @@ end
 always_ff @(posedge i_clk or posedge i_rst) begin
 	if (i_rst) begin
 		state      <= S_IDLE;
-		finished   <= 1'b0;
-		y          <= 256'd0;
-		prep_start <= 1'b0;
-		mont_start <= 1'b0;
-		counter    <= 9'b0;
-		t          <= 256'd0;
-		m          <= 256'd0;
-		m_update   <= 256'd0;
-		t_square   <= 256'd0;
+		finished   <= 0;
+		y          <= 0;
+		prep_start <= 0;
+		mont_start <= 0;
+		counter    <= 0;
+		t          <= 0;
+		m          <= 0;
+		m_update   <= 0;
+		t_square   <= 0;
 	end
 	else begin
 		state      <= state_n;
@@ -150,30 +156,33 @@ always_ff @(posedge i_clk or posedge i_rst) begin
 end
 endmodule
 
-module RsaPrep (
+module RsaPrep #(
+	parameter TEXT_W = 256,
+	parameter TEXT_C = 8
+)(
 	input         i_clk,
-	input [256:0] N,
-	input [256:0] a,
-	input [256:0] b,
-	input   [8:0] k,
-	input         i_start,
-	output [255:0] o_m,
-	output         o_finished
+	input [TEXT_W:0] N,
+	input [TEXT_W:0] a,
+	input [TEXT_W:0] b,
+	input [TEXT_C:0] k,
+	input            i_start,
+	output [TEXT_W:0] o_m,
+	output            o_finished
 );
 
 parameter S_IDLE = 1'b0;
 parameter S_CALC = 1'b1;
 
 logic         state, state_n;
-logic [256:0] t, t_n;
-logic 	[8:0] bit_cnt, bit_cnt_n;
-logic [256:0] m, m_n;
-logic [256:0] sum;
-logic [256:0] t_d;
+logic [TEXT_W:0] t, t_n;
+logic [TEXT_C:0] bit_cnt, bit_cnt_n;
+logic [TEXT_W:0] m, m_n;
+logic [TEXT_W:0] sum;
+logic [TEXT_W:0] t_d;
 logic         finished, finished_n;
 
 assign t_d = t << 1;
-assign o_m = m[255:0];
+assign o_m = m[TEXT_W - 1:0];
 assign o_finished = finished;
 
 always_comb begin
@@ -226,28 +235,31 @@ always_ff @(posedge i_clk) begin
 end
 endmodule
 
-module RsaMont (
+module RsaMont #(
+	parameter TEXT_W = 256,
+	parameter TEXT_C = 8
+)(
 	input         i_clk,
-	input [255:0] N,
-	input [255:0] a,
-	input [255:0] b,
+	input [TEXT_W - 1:0] N,
+	input [TEXT_W - 1:0] a,
+	input [TEXT_W - 1:0] b,
 	input         i_start,
-	output [255:0] o_m,
+	output [TEXT_W - 1:0] o_m,
 	output         o_finished
 );
 
 parameter S_IDLE = 1'b0;
 parameter S_CALC = 1'b1;
 
-parameter k = 9'd255;
+parameter k = TEXT_W - 1;
 
-logic         state, state_n;
-logic   [8:0] bit_cnt, bit_cnt_n;
-logic [299:0] m, m_n;
-logic         finished, finished_n;
-logic [299:0] sum, sum2;
+logic                 state, state_n;
+logic      [TEXT_C:0] bit_cnt, bit_cnt_n;
+logic [TEXT_W + 31:0] m, m_n;
+logic                 finished, finished_n;
+logic [TEXT_W + 31:0] sum, sum2;
 
-assign o_m = m[255:0];
+assign o_m = m[TEXT_W - 1:0];
 assign o_finished = finished;
 
 always_comb begin
@@ -264,10 +276,10 @@ always_comb begin
 			m_n = 0;
 		end
 		S_CALC: begin
-			if (bit_cnt <= 255) begin
+			if (bit_cnt <= TEXT_W - 1) begin
 				bit_cnt_n = bit_cnt + 1;
 				if (a[bit_cnt]) begin
-					sum = m + {44'd0, b};
+					sum = m + {32'd0, b};
 				end
 				else begin
 					sum = m;
