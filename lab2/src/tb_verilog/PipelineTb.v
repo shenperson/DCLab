@@ -182,6 +182,9 @@ always @(posedge clk or negedge rst_n) begin
 			end
 			error <= error + 1;
 		end
+		else begin
+			$display("[%m] (Right/Expected) %x / %x", dat, dat_r);
+		end
 	end
 end
 

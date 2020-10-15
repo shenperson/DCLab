@@ -30,11 +30,13 @@ module tb;
 		rst = 1;
 		#(2*CLK)
 		rst = 0;
+		
 		for (int i = 0; i < 5; i++) begin
 			for (int j = 0; j < 10; j++) begin
 				@(posedge clk);
 			end
 			$fread(encrypted_data, fp_e);
+			$display("y : ",fp_e[31:0]);
 			$fread(golden, fp_d);
 			$display("=========");
 			$display("enc  %2d = %64x", i, encrypted_data);
