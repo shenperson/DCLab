@@ -1,0 +1,104 @@
+wvSetPosition -win $_nWave1 {("G1" 0)}
+wvOpenFile -win $_nWave1 {/home/team02/lab1/sim/Lab1_test.fsdb}
+wvGetSignalOpen -win $_nWave1
+wvGetSignalSetScope -win $_nWave1 "/Top_test"
+wvGetSignalSetScope -win $_nWave1 "/Top_test/dut/top0/random_gen0"
+wvSetPosition -win $_nWave1 {("G1" 1)}
+wvSetPosition -win $_nWave1 {("G1" 1)}
+wvAddSignal -win $_nWave1 -clear
+wvAddSignal -win $_nWave1 -group {"G1" \
+{/Top_test/dut/top0/random_gen0/i_clk} \
+}
+wvAddSignal -win $_nWave1 -group {"G2" \
+}
+wvSelectSignal -win $_nWave1 {( "G1" 1 )} 
+wvSetPosition -win $_nWave1 {("G1" 1)}
+wvSetPosition -win $_nWave1 {("G1" 2)}
+wvSetPosition -win $_nWave1 {("G1" 2)}
+wvAddSignal -win $_nWave1 -clear
+wvAddSignal -win $_nWave1 -group {"G1" \
+{/Top_test/dut/top0/random_gen0/i_clk} \
+{/Top_test/dut/top0/random_gen0/i_rst_n} \
+}
+wvAddSignal -win $_nWave1 -group {"G2" \
+}
+wvSelectSignal -win $_nWave1 {( "G1" 2 )} 
+wvSetPosition -win $_nWave1 {("G1" 2)}
+wvSetPosition -win $_nWave1 {("G1" 3)}
+wvSetPosition -win $_nWave1 {("G1" 3)}
+wvAddSignal -win $_nWave1 -clear
+wvAddSignal -win $_nWave1 -group {"G1" \
+{/Top_test/dut/top0/random_gen0/i_clk} \
+{/Top_test/dut/top0/random_gen0/i_rst_n} \
+{/Top_test/dut/top0/random_gen0/state_r} \
+}
+wvAddSignal -win $_nWave1 -group {"G2" \
+}
+wvSelectSignal -win $_nWave1 {( "G1" 3 )} 
+wvSetPosition -win $_nWave1 {("G1" 3)}
+wvSetPosition -win $_nWave1 {("G1" 4)}
+wvSetPosition -win $_nWave1 {("G1" 4)}
+wvAddSignal -win $_nWave1 -clear
+wvAddSignal -win $_nWave1 -group {"G1" \
+{/Top_test/dut/top0/random_gen0/i_clk} \
+{/Top_test/dut/top0/random_gen0/i_rst_n} \
+{/Top_test/dut/top0/random_gen0/state_r} \
+{/Top_test/dut/top0/random_gen0/product\[7:0\]} \
+}
+wvAddSignal -win $_nWave1 -group {"G2" \
+}
+wvSelectSignal -win $_nWave1 {( "G1" 4 )} 
+wvSetPosition -win $_nWave1 {("G1" 4)}
+wvSetPosition -win $_nWave1 {("G1" 5)}
+wvSetPosition -win $_nWave1 {("G1" 5)}
+wvAddSignal -win $_nWave1 -clear
+wvAddSignal -win $_nWave1 -group {"G1" \
+{/Top_test/dut/top0/random_gen0/i_clk} \
+{/Top_test/dut/top0/random_gen0/i_rst_n} \
+{/Top_test/dut/top0/random_gen0/state_r} \
+{/Top_test/dut/top0/random_gen0/product\[7:0\]} \
+{/Top_test/dut/top0/random_gen0/o_random_out_r\[7:0\]} \
+}
+wvAddSignal -win $_nWave1 -group {"G2" \
+}
+wvSelectSignal -win $_nWave1 {( "G1" 5 )} 
+wvSetPosition -win $_nWave1 {("G1" 5)}
+wvResizeWindow -win $_nWave1 0 23 1536 801
+wvZoom -win $_nWave1 4396893.491919 4824438.410946
+wvZoom -win $_nWave1 4592517.105889 4605779.723786
+wvZoom -win $_nWave1 4599327.054180 4600301.450597
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoom -win $_nWave1 4941931.993184 4948219.037493
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvExit
