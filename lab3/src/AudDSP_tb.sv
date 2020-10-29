@@ -24,7 +24,7 @@ module tb();
     initial begin
         clk = 1'b1;
         rst = 1'b1;
-        lrc = 0;
+        lrc = 1;
         start = 0;
         pause = 0;
         stop = 0;

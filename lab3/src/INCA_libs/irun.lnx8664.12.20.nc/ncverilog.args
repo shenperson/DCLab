@@ -2,5 +2,5 @@
 // File created by:  ncverilog
 // Do not modify this file
 //
-AudDSP_tb.sv
+AudPlayer_tb.sv
 +access+r

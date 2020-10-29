@@ -20,8 +20,6 @@ typedef enum {
 logic [2:0] state, state_n;
 logic prev_lrck;
 
-
-
 logic [3:0]cnt, cnt_n;
 logic change;
 assign change = prev_lrck!=i_daclrck;
@@ -30,9 +28,15 @@ always_comb begin
     cnt_n = cnt;
     o_aud_dacdat = 0;
     case (state)
-        S_IDLE: state_n = i_en ? S_EN : S_IDLE;
-        S_EN: state_n = change ? S_WAIT : S_EN; 
-        S_WAIT: state_n = S_OUT;
+        S_IDLE: begin
+            state_n = i_en ? S_EN : S_IDLE;
+        end
+        S_EN: begin
+            state_n = change ? S_WAIT : S_EN; 
+        end
+        S_WAIT:begin
+            state_n = S_OUT;
+        end
         S_OUT: begin
             cnt_n = i_pause ? cnt : cnt + 1;
             state_n = i_pause ? S_PAUSE : (cnt==15 ? S_EN : S_OUT);
@@ -43,8 +47,9 @@ always_comb begin
             cnt_n = i_pause ? cnt : cnt + 1;
             o_aud_dacdat = i_dac_data[15-cnt];
         end
-        default: state_n = state;
-
+        default:begin
+            state_n = state;
+        end
     endcase
 end
 

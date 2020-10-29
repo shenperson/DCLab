@@ -6,6 +6,6 @@
 1603965351 /home/team02/lab3/src/Top_tb.sv
 1603964679 /home/team02/lab3/src/Top.sv
 1603969827 /home/team02/lab3/src/AudRecorder.sv
-1603969610 /home/team02/lab3/src/AudDSP.sv
-1603964508 /home/team02/lab3/src/AudPlayer.sv
-1603969946 /home/team02/lab3/src/AudDSP_tb.sv
+1603970375 /home/team02/lab3/src/AudDSP.sv
+1603970969 /home/team02/lab3/src/AudPlayer.sv
+1603970220 /home/team02/lab3/src/AudDSP_tb.sv

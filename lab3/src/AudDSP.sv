@@ -35,7 +35,7 @@ always_comb begin
     case(state_r)
         S_IDLE: begin
             if(i_start) begin
-                state_w = S_PAUSE;
+                state_w = S_WAIT;
                 o_sram_addr_w = 0;
             end
         end
@@ -59,7 +59,7 @@ always_comb begin
                 state_w = S_PAUSE;
             end
             else if(!i_daclrck) begin
-                state_w = S_WAIT;
+                state_w = S_PLAY;
                 o_dac_data_w = i_sram_data;
             end
         end
