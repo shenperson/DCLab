@@ -53,9 +53,12 @@ parameter S_RECD_PAUSE = 3;
 parameter S_PLAY       = 4;
 parameter S_PLAY_PAUSE = 5;
 
+logic [2:0] state_w, state_r;
+
 logic i2c_oen, i2c_sdat;
 logic [19:0] addr_record, addr_play;
 logic [15:0] data_record, data_play, dac_data;
+logic AudPlayer_en; 
 
 assign io_I2C_SDAT = (i2c_oen) ? i2c_sdat : 1'bz;
 
@@ -63,7 +66,7 @@ assign o_SRAM_ADDR = (state_r == S_RECD) ? addr_record : addr_play[19:0];
 assign io_SRAM_DQ  = (state_r == S_RECD) ? data_record : 16'dz; // sram_dq as output
 assign data_play   = (state_r != S_RECD) ? io_SRAM_DQ : 16'd0; // sram_dq as input
 
-assign o_SRAM_WE_N = (state_r == S_RECD) ? 1'b0 : 1'b1;
+assign o_SRAM_WE_N = (state_r == S_RECD) ? 1'b0 : 1'b1; // write : read
 assign o_SRAM_CE_N = 1'b0;
 assign o_SRAM_OE_N = 1'b0;
 assign o_SRAM_LB_N = 1'b0;
@@ -109,7 +112,7 @@ AudPlayer player0(
 	.i_rst_n(i_rst_n),
 	.i_bclk(i_AUD_BCLK),
 	.i_daclrck(i_AUD_DACLRCK),
-	.i_en(), // enable AudPlayer only when playing audio, work with AudDSP
+	.i_en(AudPlayer_en), // enable AudPlayer only when playing audio, work with AudDSP
 	.i_dac_data(dac_data), //dac_data
 	.o_aud_dacdat(o_AUD_DACDAT)
 );
@@ -130,14 +133,29 @@ AudRecorder recorder0(
 
 always_comb begin
 	// design your control here
+	state_w = state_r;
+	case(state_r)
+		S_IDLE: begin
+		end
+		S_I2C: begin
+		end
+		S_RECD: begin
+		end      
+		S_RECD_PAUSE: begin
+		end
+		S_PLAY: begin
+		end      
+		S_PLAY_PAUSE: begin
+		end
+	endcase
 end
 
 always_ff @(posedge i_AUD_BCLK or posedge i_rst_n) begin
 	if (!i_rst_n) begin
-		
+		state_r <= S_IDLE;
 	end
 	else begin
-		
+		state_r <= state_w;
 	end
 end
 
