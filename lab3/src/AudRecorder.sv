@@ -17,7 +17,7 @@ typedef enum {
     S_PAUSE
 } Recorder_state;
 
-logic        state_r, state_w;
+logic  [2:0] state_r, state_w;
 logic  [4:0] cnt_r, cnt_w;
 logic [19:0] addr_r, addr_w;
 logic [15:0] data_r, data_w;
@@ -46,16 +46,19 @@ always_comb begin
                 state_w = S_PAUSE;
             end
             else if(cnt_r < 16) begin
-                data_w[cnt_r] = i_data;
+                data_w[15-cnt_r] = i_data;
                 cnt_w = cnt_r + 1;
             end
-            else begin
+            else if(i_lrc) begin
                 state_w = S_WAIT;
             end
         end
         S_WAIT: begin
             if(i_stop) begin
                 state_w = S_IDLE;
+            end
+            else if(i_pause) begin
+                state_w = S_PAUSE;
             end
             else if(!i_lrc) begin
                state_w = S_PROC; 
@@ -66,8 +69,15 @@ always_comb begin
             if(i_stop) begin
                 state_w = S_IDLE;
             end
-            else if(i_pause && i_lrc) begin
-                state_w = S_WAIT;
+            else if(!i_pause) begin
+                if(i_lrc) begin
+                    state_w = S_WAIT; 
+                end
+                else begin
+                    state_w = S_PROC;
+                    data_w[15-cnt_r] = i_data;
+                    cnt_w = cnt_r + 1;
+                end
             end
         end
         default: begin

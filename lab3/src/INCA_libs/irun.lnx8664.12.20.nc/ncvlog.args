@@ -5,7 +5,7 @@
 -XLMODE
 ./INCA_libs/irun.lnx8664.12.20.nc
 -RUNMODE
-AudPlayer_tb.sv
+AudDSP_tb.sv
 -CDSLIB
 ./INCA_libs/irun.lnx8664.12.20.nc/cdsrun.lib
 -HDLVAR

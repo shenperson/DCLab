@@ -24,6 +24,11 @@ logic o_sdat_r, o_sdat_w;
 logic o_oen_r, o_oen_w;
 logic o_finished_r, o_finished_w;
 
+assign o_finished = o_finished_r;
+assign o_sclk = o_sclk_r;
+assign o_sdat = o_sdat_r;
+assign o_oen = o_oen_r;
+
 always_comb begin
     // initialize
     state_w = state_r;
@@ -31,6 +36,7 @@ always_comb begin
     o_sclk_w = o_sclk_r;
     o_sdat_w = o_sdat_r;
     o_oen_w = o_oen_r;
+    o_finished_w = o_finished_r;
 
     case (state_r)
         S_IDLE: begin
@@ -39,27 +45,59 @@ always_comb begin
                 // SDA pulls to 0 while SCL stays at 1
                 o_sdat_w = 0;
                 o_sclk_w = 1;
+                o_oen_w = 1;
+                o_finished_w = 0;
             end
         end
 
         S_TRANSIT: begin
             // SDA sets transfer bit when SCL is 0
-            bit_cnt_w = bit_cnt_r + 1;
-            o_sdat_w = i_data[bit_cnt_r];
             o_sclk_w = 0;
+            o_oen_w = 1;
+            o_finished_w = 0;
+
+            state_w = S_SEND;
+            bit_cnt_w = bit_cnt_r - 1;
+            
+            // set acknowledge after sending 8 bits
+            if (bit_cnt_r == 17 || bit_cnt_r == 9) begin
+                state_w = S_ACK;
+            end
+
+            // finish
+            if (bit_cnt_r == 0) begin
+                state_w = S_FINISH;
+            end
         end
 
         S_SEND: begin
             // data is sent when SCL is 1
+            o_sdat_w = i_data[bit_cnt_r];
+            o_sclk_w = 1;
+            o_oen_w = 1;
+            o_finished_w = 0;
+
+            state_w = S_TRANSIT;
         end
 
         S_ACK: begin
             // Set SDA to high impedance
             o_sdat_w = 1'bz;
+            o_oen_w = 0;
+            o_finished_w = 0;
+
+            state_w = S_TRANSIT;
         end
         
         S_FINISH: begin
             // SDA pulls to 1 while SCL stays at 1
+            o_sdat_w = 1;
+            o_sclk_w = 1;
+            o_oen_w = 1;
+            o_finished_w = 1;
+
+            state_w = S_IDLE;
+            bit_cnt_w = 23;       
         end 
     endcase
 
@@ -68,7 +106,7 @@ end
 always_ff @(posedge i_clk or posedge i_rst_n) begin
     if (!i_rst_n) begin
 		state_r <= S_IDLE;
-        bit_cnt_r <= 23;
+        bit_cnt_r <= 24;
 
         o_sclk_r <= 1;
         o_sdat_r <= 1;

@@ -3,6 +3,7 @@ module AudPlayer(
     input i_bclk,
     input i_daclrck,
     input i_en, // enable AudPlayer only when playing audio, work with AudDSP
+    input i_pause,
     input [15:0] i_dac_data, //dac_data
     output reg o_aud_dacdat
 );
@@ -11,11 +12,12 @@ typedef enum {
     S_IDLE,
     S_EN,
     S_WAIT,
-    S_OUT
+    S_OUT,
+    S_PAUSE
 } AudPlayer_state;
 
 // logic o_aud_dacdat_n;
-logic [1:0] state, state_n;
+logic [2:0] state, state_n;
 logic prev_lrck;
 
 
@@ -32,10 +34,17 @@ always_comb begin
         S_EN: state_n = change ? S_WAIT : S_EN; 
         S_WAIT: state_n = S_OUT;
         S_OUT: begin
-            cnt_n = cnt + 1;
-            state_n = cnt==15 ? S_EN : S_OUT;
+            cnt_n = i_pause ? cnt : cnt + 1;
+            state_n = i_pause ? S_PAUSE : (cnt==15 ? S_EN : S_OUT);
             o_aud_dacdat = i_dac_data[15-cnt];
         end
+        S_PAUSE: begin
+            state_n = i_pause ? S_PAUSE : S_OUT;
+            cnt_n = i_pause ? cnt : cnt + 1;
+            o_aud_dacdat = i_dac_data[15-cnt];
+        end
+        default: state_n = state;
+
     endcase
 end
 
