@@ -1,0 +1,40 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate C:\Users\user\Desktop\lab3\pll\pll.qsys --block-symbol-file --output-directory=C:\Users\user\Desktop\lab3\pll\pll --family="Cyclone IV E" --part=EP4CE115F29C7
+Progress: Loading pll/pll.qsys
+Progress: Reading input file
+Progress: Adding altpll_0 [altpll 15.0]
+Progress: Parameterizing module altpll_0
+Progress: Adding clk_0 [clock_source 15.0]
+Progress: Parameterizing module clk_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Warning: pll.altpll_0: altpll_0.areset_conduit must be exported, or connected to a matching conduit.
+Warning: pll.altpll_0: altpll_0.locked_conduit must be exported, or connected to a matching conduit.
+Warning: pll.altpll_0: altpll_0.phasedone_conduit must be exported, or connected to a matching conduit.
+Warning: pll.altpll_0: altpll_0.pll_slave must be connected to an Avalon-MM master
+Info: ip-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate C:\Users\user\Desktop\lab3\pll\pll.qsys --synthesis=VERILOG --output-directory=C:\Users\user\Desktop\lab3\pll\pll\synthesis --family="Cyclone IV E" --part=EP4CE115F29C7
+Progress: Loading pll/pll.qsys
+Progress: Reading input file
+Progress: Adding altpll_0 [altpll 15.0]
+Progress: Parameterizing module altpll_0
+Progress: Adding clk_0 [clock_source 15.0]
+Progress: Parameterizing module clk_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Warning: pll.altpll_0: altpll_0.areset_conduit must be exported, or connected to a matching conduit.
+Warning: pll.altpll_0: altpll_0.locked_conduit must be exported, or connected to a matching conduit.
+Warning: pll.altpll_0: altpll_0.phasedone_conduit must be exported, or connected to a matching conduit.
+Warning: pll.altpll_0: altpll_0.pll_slave must be connected to an Avalon-MM master
+Info: pll: Generating pll "pll" for QUARTUS_SYNTH
+Error: Generation stopped, 2 or more modules remaining
+Info: pll: Done "pll" with 3 modules, 1 files
+Error: ip-generate failed with exit code 1: 1 Error, 4 Warnings
+Info: Stopping: Create HDL design files for synthesis
