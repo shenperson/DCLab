@@ -9,20 +9,22 @@ module I2cSender(
 	output       o_oen // you are outputing (you are not outputing only when you are "ack"ing.)
 );
 
-parameter S_IDLE = 0;
+parameter S_IDLE    = 0;
 parameter S_TRANSIT = 1;
-parameter S_SEND = 2;
-parameter S_ACK = 3;
-parameter S_FINISH = 4;
+parameter S_SEND    = 2;
+parameter S_ACK     = 3;
+parameter S_FINISH  = 4;
 
-logic [1:0] state_r, state_w;
+parameter BIT_CNT_START = 24;
+
+logic [2:0] state_r, state_w;
 logic [4:0] bit_cnt_r, bit_cnt_w;
 
 // output registers
-logic o_sclk_r, o_sclk_w;
-logic o_sdat_r, o_sdat_w;
-logic o_oen_r, o_oen_w;
-logic o_finished_r, o_finished_w;
+logic       o_sclk_r, o_sclk_w;
+logic       o_sdat_r, o_sdat_w;
+logic       o_oen_r, o_oen_w;
+logic       o_finished_r, o_finished_w;
 
 assign o_finished = o_finished_r;
 assign o_sclk = o_sclk_r;
@@ -31,73 +33,77 @@ assign o_oen = o_oen_r;
 
 always_comb begin
     // initialize
-    state_w = state_r;
-    bit_cnt_w = bit_cnt_r;
-    o_sclk_w = o_sclk_r;
-    o_sdat_w = o_sdat_r;
-    o_oen_w = o_oen_r;
+    state_w      = state_r;
+    bit_cnt_w    = bit_cnt_r;
+    o_sclk_w     = o_sclk_r;
+    o_sdat_w     = o_sdat_r;
+    o_oen_w      = o_oen_r;
     o_finished_w = o_finished_r;
 
     case (state_r)
         S_IDLE: begin
             if (i_start) begin
                 state_w = S_TRANSIT;
+                
                 // SDA pulls to 0 while SCL stays at 1
-                o_sdat_w = 0;
-                o_sclk_w = 1;
-                o_oen_w = 1;
+                o_sdat_w     = 0;
+                o_sclk_w     = 1;
+                o_oen_w      = 1;
                 o_finished_w = 0;
             end
         end
 
         S_TRANSIT: begin
             // SDA sets transfer bit when SCL is 0
-            o_sclk_w = 0;
-            o_oen_w = 1;
+            o_sclk_w     = 0;
+            o_oen_w      = 1;
             o_finished_w = 0;
 
-            state_w = S_SEND;
             bit_cnt_w = bit_cnt_r - 1;
             
             // set acknowledge after sending 8 bits
-            if (bit_cnt_r == 17 || bit_cnt_r == 9) begin
+            if (bit_cnt_r == 16 || bit_cnt_r == 8) begin
                 state_w = S_ACK;
             end
-
             // finish
-            if (bit_cnt_r == 0) begin
+            else if (bit_cnt_r == 0) begin
                 state_w = S_FINISH;
+            end
+            else begin
+                state_w = S_SEND;
             end
         end
 
         S_SEND: begin
+            state_w = S_TRANSIT;
+
             // data is sent when SCL is 1
-            o_sdat_w = i_data[bit_cnt_r];
-            o_sclk_w = 1;
-            o_oen_w = 1;
+            o_sdat_w     = i_data[bit_cnt_r];
+            o_sclk_w     = 1;
+            o_oen_w      = 1;
             o_finished_w = 0;
 
-            state_w = S_TRANSIT;
         end
 
         S_ACK: begin
+            state_w = S_SEND;
+            
             // Set SDA to high impedance
-            o_sdat_w = 1'bz;
-            o_oen_w = 0;
+            o_sdat_w     = 1'bz;
+            o_oen_w      = 0;
             o_finished_w = 0;
 
-            state_w = S_TRANSIT;
         end
         
         S_FINISH: begin
             // SDA pulls to 1 while SCL stays at 1
-            o_sdat_w = 1;
-            o_sclk_w = 1;
-            o_oen_w = 1;
+            o_sdat_w     = 1;
+            o_sclk_w     = 1;
+            o_oen_w      = 1;
             o_finished_w = 1;
 
-            state_w = S_IDLE;
-            bit_cnt_w = 23;       
+            state_w   = S_IDLE;
+            bit_cnt_w = BIT_CNT_START;       
         end 
     endcase
 
@@ -105,21 +111,21 @@ end
 
 always_ff @(posedge i_clk or posedge i_rst_n) begin
     if (!i_rst_n) begin
-		state_r <= S_IDLE;
-        bit_cnt_r <= 24;
+		state_r      <= S_IDLE;
+        bit_cnt_r    <= BIT_CNT_START;
 
-        o_sclk_r <= 1;
-        o_sdat_r <= 1;
-        o_oen_r <= 1;
+        o_sclk_r     <= 1;
+        o_sdat_r     <= 1;
+        o_oen_r      <= 1;
         o_finished_r <= 0;
 	end
 	else begin
-		state_r <= state_w;
-        bit_cnt_r <= bit_cnt_w;
+		state_r      <= state_w;
+        bit_cnt_r    <= bit_cnt_w;
 
-        o_sclk_r <= o_sclk_w;
-        o_sdat_r <= o_sdat_w;
-        o_oen_r <= o_oen_w;
+        o_sclk_r     <= o_sclk_w;
+        o_sdat_r     <= o_sdat_w;
+        o_oen_r      <= o_oen_w;
         o_finished_r <= o_finished_w;
 	end
 end

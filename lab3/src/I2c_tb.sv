@@ -47,11 +47,18 @@ module tb();
     );
 
     initial begin
-    $fsdbDumpfile("i2ci.fsdb");
-    $fsdbDumpvars;
+        $fsdbDumpfile("i2ci.fsdb");
+        $fsdbDumpvars;
     end
 
-    `define TIME_OUT 10000000
+    // always begin
+    //     if (finished == 1'b1) begin
+    //         start = 1'b0;
+    //         #(`CYCLE * 5) $finish;
+    //     end
+    // end
+
+    `define TIME_OUT 10000
     initial #(`TIME_OUT) $finish;
 
 endmodule

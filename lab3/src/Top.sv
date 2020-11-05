@@ -30,6 +30,7 @@ module Top (
 	// SEVENDECODER (optional display)
 	// output [5:0] o_record_time,
 	// output [5:0] o_play_time,
+	output [2:0] state;
 
 	// LCD (optional display)
 	// input        i_clk_800k,
@@ -44,7 +45,6 @@ module Top (
 	// output  [8:0] o_ledg,
 	// output [17:0] o_ledr
 );
-
 // design the FSM and states as you like
 parameter S_IDLE       = 0;
 parameter S_I2C        = 1;
@@ -65,10 +65,16 @@ logic recorder_start_r, recorder_start_w;
 logic recorder_pause_r, recorder_pause_w;
 logic recorder_stop_r, recorder_stop_w;
 
+logic dsp_start_r, dsp_start_w;
+logic dsp_pause_r, dsp_pause_w;
+logic dsp_stop_r, dsp_stop_w;
+
 logic [19:0] addr_record, addr_play;
 logic [15:0] data_record, data_play, dac_data;
 logic player_en_r, player_en_w;
 logic player_pause_r, player_pause_w;
+
+assign state = state_r;
 
 assign io_I2C_SDAT = (i2c_oen) ? i2c_sdat : 1'bz;
 
@@ -104,8 +110,9 @@ I2cInitializer init0(
 AudDSP dsp0(
 	.i_rst_n(i_rst_n),
 	.i_clk(i_AUD_BCLK),
-	.i_start_pause(),
-	.i_stop(),
+	.i_start(dsp_start_r),
+	.i_pause(dsp_pause_r),
+	.i_stop(dsp_stop_r),
 	// .i_speed(),
 	// .i_fast(),
 	// .i_slow_0(), // constant interpolation
@@ -150,6 +157,9 @@ always_comb begin
 	recorder_start_w = recorder_start_r;
 	recorder_pause_w = recorder_pause_r;
 	recorder_stop_w = recorder_stop_r;
+	dsp_start_w = dsp_start_r;
+	dsp_pause_w = dsp_pause_r;
+	dsp_stop_w = dsp_stop_r;
 	player_en_w = player_en_r;
 	player_pause_w = player_pause_r;
 	case(state_r)
@@ -193,16 +203,20 @@ always_comb begin
 			if(i_key_0) begin
 				state_w = S_PLAY;
 				player_en_w = 1;
+				dsp_start_w = 1;
 			end
 		end
 		S_PLAY: begin
+			dsp_start_w = 0;
 			if(i_key_0) begin
 				state_w = S_IDLE;
 				player_en_w = 0;
+				dsp_stop_w = 1;
 			end
 			else if(i_key_1) begin
 				state_w = S_PLAY_PAUSE;
 				player_pause_w = 1;
+				dsp_pause_w = 1;
 			end
 		end
 		S_PLAY_PAUSE: begin
@@ -210,10 +224,12 @@ always_comb begin
 				state_w = S_IDLE;
 				player_en_w = 0;
 				player_pause_w = 0;
+				dsp_stop_w = 1;
 			end
 			else if(i_key_1) begin
 				state_w = S_PLAY;
 				player_pause_w = 0;
+				dsp_pause_w = 0;
 			end      
 		end
 		default: begin
@@ -230,6 +246,9 @@ always_ff @(posedge i_AUD_BCLK or posedge i_rst_n) begin
 		recorder_start_r <= 0;
 		recorder_pause_r <= 0;
 		recorder_stop_r <= 0;
+		dsp_start_r <= 0;
+		dsp_pause_r <= 0;
+		dsp_stop_r <= 0;
 		player_en_r <= 0;
 		player_pause_r <= 0;
 	end
@@ -240,6 +259,9 @@ always_ff @(posedge i_AUD_BCLK or posedge i_rst_n) begin
 		recorder_start_r <= recorder_start_w;
 		recorder_pause_r <= recorder_pause_w;
 		recorder_stop_r <= recorder_stop_w;
+		dsp_start_r <= dsp_start_w;
+		dsp_pause_r <= dsp_pause_w;
+		dsp_stop_r <= dsp_stop_w;
 		player_en_r <= player_en_w;
 		player_pause_r <= player_pause_w;
 	end
