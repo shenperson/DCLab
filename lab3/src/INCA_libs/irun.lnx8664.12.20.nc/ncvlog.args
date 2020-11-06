@@ -5,13 +5,9 @@
 -XLMODE
 ./INCA_libs/irun.lnx8664.12.20.nc
 -RUNMODE
-Top_tb.sv
-Top.sv
+I2c_tb.sv
 I2cInitializer.sv
 I2cSender.sv
-AudRecorder.sv
-AudDSP.sv
-AudPlayer.sv
 -CDSLIB
 ./INCA_libs/irun.lnx8664.12.20.nc/cdsrun.lib
 -HDLVAR

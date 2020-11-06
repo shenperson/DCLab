@@ -66,7 +66,8 @@ always_comb begin
         S_PAUSE: begin
             if(i_stop) begin
                 state_w = S_IDLE;
-            end if(!i_pause) begin
+            end 
+            else if(!i_pause) begin
                 if(i_daclrck) begin
                     state_w = S_WAIT;
                 end

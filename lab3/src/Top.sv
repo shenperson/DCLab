@@ -58,7 +58,6 @@ logic [2:0] state_w, state_r;
 
 logic i2c_start_r, i2c_start_w;
 logic i2c_finished;
-logic [2:0] i2c_ctrl_r, i2c_ctrl_w;
 logic i2c_oen, i2c_sdat;
 
 logic recorder_start_r, recorder_start_w;
@@ -95,9 +94,8 @@ assign o_SRAM_UB_N = 1'b0;
 // sequentially sent out settings to initialize WM8731 with I2C protocal
 I2cInitializer init0(
 	.i_rst_n(i_rst_n),
-	.i_clk(i_clk_100K),
+	.i_clk(i_clk_100k),
 	.i_start(i2c_start_r),
-	.i_op(i2c_ctrl_r),
 	.o_finished(i2c_finished),
 	.o_sclk(o_I2C_SCLK),
 	.o_sdat(i2c_sdat),
@@ -153,7 +151,6 @@ always_comb begin
 	// design your control here
 	state_w = state_r;
 	i2c_start_w = i2c_start_r;
-	i2c_ctrl_w = i2c_ctrl_r;
 	recorder_start_w = recorder_start_r;
 	recorder_pause_w = recorder_pause_r;
 	recorder_stop_w = recorder_stop_r;
@@ -167,7 +164,6 @@ always_comb begin
 			if(i_key_0) begin
 				state_w = S_I2C;
 				i2c_start_w = 1;
-				i2c_ctrl_w = 0;
 			end
 		end
 		S_I2C: begin
@@ -178,10 +174,10 @@ always_comb begin
 			end
 		end
 		S_RECD: begin
-			recorder_start_w = 0;
 			if(i_key_0) begin // stop
 				state_w = S_TUNE;
 				recorder_stop_w = 1;
+				recorder_start_w = 0;
 			end
 			else if(i_key_1) begin // pause
 				state_w = S_RECD_PAUSE;
@@ -193,6 +189,7 @@ always_comb begin
 				state_w = S_TUNE;
 				recorder_pause_w = 0;
 				recorder_stop_w = 1;
+				recorder_start_w = 0;
 			end
 			else if(i_key_1) begin
 				state_w = S_RECD;
@@ -207,11 +204,11 @@ always_comb begin
 			end
 		end
 		S_PLAY: begin
-			dsp_start_w = 0;
 			if(i_key_0) begin
 				state_w = S_IDLE;
 				player_en_w = 0;
 				dsp_stop_w = 1;
+				dsp_start_w = 0;
 			end
 			else if(i_key_1) begin
 				state_w = S_PLAY_PAUSE;
@@ -225,6 +222,7 @@ always_comb begin
 				player_en_w = 0;
 				player_pause_w = 0;
 				dsp_stop_w = 1;
+				dsp_start_w = 0;
 			end
 			else if(i_key_1) begin
 				state_w = S_PLAY;
@@ -238,11 +236,10 @@ always_comb begin
 	endcase
 end
 
-always_ff @(posedge i_AUD_BCLK or negedge i_rst_n) begin
+always_ff @(posedge i_clk or negedge i_rst_n) begin
 	if (!i_rst_n) begin
 		state_r <= S_IDLE;
 		i2c_start_r <= 0;
-		i2c_ctrl_r <= 0;
 		recorder_start_r <= 0;
 		recorder_pause_r <= 0;
 		recorder_stop_r <= 0;
@@ -255,7 +252,6 @@ always_ff @(posedge i_AUD_BCLK or negedge i_rst_n) begin
 	else begin
 		state_r <= state_w;
 		i2c_start_r <= i2c_start_w;
-		i2c_ctrl_r <= i2c_ctrl_w;
 		recorder_start_r <= recorder_start_w;
 		recorder_pause_r <= recorder_pause_w;
 		recorder_stop_r <= recorder_stop_w;

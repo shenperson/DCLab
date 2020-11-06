@@ -9,15 +9,16 @@ module I2cSender(
 	output       o_oen // you are outputing (you are not outputing only when you are "ack"ing.)
 );
 
-parameter S_IDLE    = 0;
-parameter S_TRANSIT = 1;
-parameter S_SEND    = 2;
-parameter S_ACK     = 3;
-parameter S_FINISH  = 4;
+parameter S_IDLE     = 0;
+parameter S_TRANSIT  = 1;
+parameter S_SEND     = 2;
+parameter S_ACK      = 3;
+parameter S_FINISH   = 4;
+parameter S_FINISH_2 = 5;
 
 parameter BIT_CNT_START = 24;
 
-logic [2:0] state_r, state_w;
+logic [3:0] state_r, state_w;
 logic [4:0] bit_cnt_r, bit_cnt_w;
 
 // output registers
@@ -59,15 +60,9 @@ always_comb begin
             o_oen_w      = 1;
             o_finished_w = 0;
 
-            bit_cnt_w = bit_cnt_r - 1;
-            
             // set acknowledge after sending 8 bits
-            if (bit_cnt_r == 16 || bit_cnt_r == 8) begin
+            if (bit_cnt_r == 16 || bit_cnt_r == 8 || bit_cnt_r == 0) begin
                 state_w = S_ACK;
-            end
-            // finish
-            else if (bit_cnt_r == 0) begin
-                state_w = S_FINISH;
             end
             else begin
                 state_w = S_SEND;
@@ -78,18 +73,25 @@ always_comb begin
             state_w = S_TRANSIT;
 
             // data is sent when SCL is 1
-            o_sdat_w     = i_data[bit_cnt_r];
+            o_sdat_w     = i_data[bit_cnt_r - 1];
             o_sclk_w     = 1;
             o_oen_w      = 1;
             o_finished_w = 0;
 
+            bit_cnt_w = bit_cnt_r - 1;
         end
 
         S_ACK: begin
-            state_w = S_SEND;
+            if (bit_cnt_r == 0) begin
+                state_w = S_FINISH;
+            end
+            else begin
+                state_w = S_SEND;
+            end
             
             // Set SDA to high impedance
             o_sdat_w     = 1'bz;
+            o_sclk_w     = 1;
             o_oen_w      = 0;
             o_finished_w = 0;
 
@@ -97,13 +99,23 @@ always_comb begin
         
         S_FINISH: begin
             // SDA pulls to 1 while SCL stays at 1
+            o_sdat_w     = 0;
+            o_sclk_w     = 1;
+            o_oen_w      = 1;
+            o_finished_w = 0;
+
+            state_w   = S_FINISH_2;
+            bit_cnt_w = BIT_CNT_START;
+        end
+
+        S_FINISH_2: begin
+            // SDA pulls to 1 while SCL stays at 1
             o_sdat_w     = 1;
             o_sclk_w     = 1;
             o_oen_w      = 1;
             o_finished_w = 1;
 
             state_w   = S_IDLE;
-            bit_cnt_w = BIT_CNT_START;       
         end 
     endcase
 

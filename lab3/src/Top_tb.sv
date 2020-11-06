@@ -66,8 +66,18 @@ module tb();
         // i_AUD_BCLK = 0;
         #(`CYCLE*0.2); i_rst_n = 1'b0;
         #(`CYCLE*1.5); i_rst_n = 1'b1;
-        #(`CYCLE*500); i_key_0 = 1;
-        #(`CYCLE*20); i_key_0 = 0;
+        #(`CYCLE*5); i_key_0 = 1;
+        #(`CYCLE*2); i_key_0 = 0;
+
+        #(`CYCLE*40000);i_AUD_ADCDAT = 1;
+        #(`CYCLE*500); i_AUD_ADCDAT = 0;
+        #(`CYCLE*600); i_AUD_ADCDAT = 1;
+        #(`CYCLE*700); i_AUD_ADCDAT = 0;
+        #(`CYCLE*800); i_AUD_ADCDAT = 0;
+        #(`CYCLE*1000); i_key_0 = 1;
+        #(`CYCLE*1); i_key_0 = 0;
+        #(`CYCLE*1000); i_key_0 = 1;
+        #(`CYCLE*1); i_key_0 = 0;
     end
 
     always begin 
@@ -89,7 +99,8 @@ module tb();
         $fsdbDumpvars;
     end
 
-    `define TIME_OUT 120
+
+    `define TIME_OUT 120000
     initial #(`TIME_OUT) $finish;
 
 endmodule

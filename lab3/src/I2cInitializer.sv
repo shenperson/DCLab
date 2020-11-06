@@ -2,7 +2,6 @@ module I2cInitializer (
     input       i_rst_n,
 	input       i_clk,
 	input       i_start,
-    input [2:0] i_op, // operation to initialize
 	output      o_finished,
 	output      o_sclk, // SCL
 	output      o_sdat, // SDA
@@ -11,16 +10,9 @@ module I2cInitializer (
 
 // state
 parameter S_IDLE   = 0;
-parameter S_SEND   = 1;
-
-// different operations
-parameter OP_RESET = 0;
-parameter OP_AAPC  = 1;
-parameter OP_DAPC  = 2;
-parameter OP_PDC   = 3;
-parameter OP_DAIF  = 4;
-parameter OP_SC    = 5;
-parameter OP_AC    = 6;
+parameter S_PREP   = 1;
+parameter S_SEND   = 2;
+parameter S_FINISH = 3;
 
 // initialize data
 parameter BIT_RESET = 24'b0011_0100_000_1111_0_0000_0000;
@@ -31,16 +23,22 @@ parameter BIT_DAIF  = 24'b0011_0100_000_0111_0_0100_0010;
 parameter BIT_SC    = 24'b0011_0100_000_1000_0_0001_1001;
 parameter BIT_AC    = 24'b0011_0100_000_1001_0_0000_0001;
 
-logic        state_r, state_w;
-logic        i_start_r, i_start_w;
-logic [23:0] i_data_r, i_data_w;
+logic [1:0]  state_r, state_w;
+logic        sender_start_r, sender_start_w;
+logic [23:0] sender_data_r, sender_data_w;
+logic        sender_finished;
+
+logic [2:0]  data_cnt_r, data_cnt_w;
+logic o_finished_r, o_finished_w;
+
+assign o_finished = o_finished_r;
 
 I2cSender i2cs (
     .i_rst_n(i_rst_n),
 	.i_clk(i_clk),
-	.i_start(i_start_r),
-    .i_data(i_data_r),
-	.o_finished(o_finished),
+	.i_start(sender_start_r),
+    .i_data(sender_data_r),
+	.o_finished(sender_finished),
 	.o_sclk(o_sclk), // SCL
 	.o_sdat(o_sdat), // SDA
 	.o_oen(o_oen)
@@ -50,24 +48,51 @@ I2cSender i2cs (
 always_comb begin
     // initialize
     state_w = state_r;
-    i_start_w = i_start_r;
-    i_data_w = i_data_r;
+    data_cnt_w = data_cnt_r;
+    sender_start_w = sender_start_r;
+    sender_data_w = sender_data_r;
+    o_finished_w = o_finished_r;
 
     case (state_r)
         S_IDLE: begin
-            state_w = (i_start)? S_SEND : S_IDLE;
-            i_start_w = i_start;
-            i_data_w = (i_op == OP_RESET)? BIT_RESET :
-                       (i_op == OP_AAPC)?  BIT_AAPC :
-                       (i_op == OP_DAPC)?  BIT_DAPC :
-                       (i_op == OP_PDC)?   BIT_PDC :
-                       (i_op == OP_DAIF)?  BIT_DAIF :
-                       (i_op == OP_SC)?    BIT_SC :
-                       (i_op == OP_AC)?    BIT_AC : BIT_RESET;
+            if (i_start) begin
+                state_w = S_PREP;
+            end
+        end
+
+        S_PREP: begin
+            if (data_cnt_r == 7) begin
+                state_w = S_FINISH;
+            end
+            else begin
+                state_w = S_SEND;
+                sender_start_w = 1;
+                case (data_cnt_r)
+                    0:       sender_data_w = BIT_RESET;
+                    1:       sender_data_w = BIT_AAPC;
+                    2:       sender_data_w = BIT_DAPC;
+                    3:       sender_data_w = BIT_PDC;
+                    4:       sender_data_w = BIT_DAIF;
+                    5:       sender_data_w = BIT_SC;
+                    6:       sender_data_w = BIT_AC;
+                    default: sender_data_w = BIT_RESET;
+                endcase
+                data_cnt_w = data_cnt_r + 1;
+            end
         end
 
         S_SEND: begin
-            state_w = (o_finished)? S_IDLE : S_SEND;
+            if (sender_finished) begin
+                state_w = S_PREP;
+                sender_start_w = 0;
+            end
+        end
+
+        S_FINISH: begin
+            o_finished_w = 1;
+            state_w = S_IDLE;
+            sender_start_w = 0;
+            sender_data_w = 0;
         end
     endcase
 end
@@ -75,14 +100,18 @@ end
 // always_ff @(posedge i_clk or posedge i_rst_n) begin
 always_ff @(posedge i_clk or negedge i_rst_n) begin
 	if (!i_rst_n) begin
-		state_r   <= S_IDLE;
-        i_start_r <= 0;
-        i_data_r  <= BIT_RESET;
+		state_r        <= S_IDLE;
+        sender_start_r <= 0;
+        sender_data_r  <= BIT_RESET;
+        data_cnt_r     <= 0;
+        o_finished_r   <= 0;
 	end
 	else begin
-		state_r   <= state_w;
-        i_start_r <= i_start_w;
-        i_data_r  <= i_data_w;
+		state_r        <= state_w;
+        sender_start_r <= sender_start_w;
+        sender_data_r  <= sender_data_w;
+        data_cnt_r     <= data_cnt_w;
+        o_finished_r   <= o_finished_w;
 	end
 end
 

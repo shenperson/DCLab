@@ -237,13 +237,24 @@ SevenHexDecoder seven_dec0(
 	.o_seven_one(HEX0)
 );
 
+SevenHexDecoder seven_dec1(
+	.i_hex(AUD_DACDAT),
+	.o_seven_ten(HEX3),
+	.o_seven_one(HEX2)
+);
+// SevenHexDecoder seven_dec2(
+// 	.i_hex(SRAM_DQ[15:8]),
+// 	.o_seven_ten(HEX5),
+// 	.o_seven_one(HEX4)
+// );
+assign LEDG = {AUD_ADCDAT, 7'd0};
 // comment those are use for display
 // assign HEX0 = '1;
 // assign HEX1 = '1;
-assign HEX2 = '1;
-assign HEX3 = '1;
-assign HEX4 = '1;
-assign HEX5 = '1;
+// assign HEX2 = '1;
+// assign HEX3 = '1;
+// assign HEX4 = '1;
+// assign HEX5 = '1;
 assign HEX6 = '1;
 assign HEX7 = '1;
 
