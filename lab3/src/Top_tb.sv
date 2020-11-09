@@ -23,6 +23,7 @@ module tb();
 
 	logic i_AUD_ADCDAT;
 	wire  i_AUD_ADCLRCK;
+    reg lrc;
 	wire  i_AUD_BCLK;
 	wire  i_AUD_DACLRCK;
 	logic o_AUD_DACDAT;
@@ -52,7 +53,10 @@ module tb();
 	    .i_AUD_DACLRCK(i_AUD_DACLRCK),
 	    .o_AUD_DACDAT(o_AUD_DACDAT)
     );
-
+    assign i_AUD_ADCLRCK = lrc;
+    assign i_AUD_DACLRCK = lrc;
+    // assign i_AUD_BCLK = i_clk_100k;
+    assign i_AUD_BCLK = i_clk;
     initial begin
         i_clk = 1'b0;
         i_rst_n = 1'b1;
@@ -63,6 +67,8 @@ module tb();
         i_clk_100k = 1'b0;
         // io_I2C_SDAT = 16'dz;
         i_AUD_ADCDAT = 0;
+
+        lrc = 0;
         // i_AUD_BCLK = 0;
         #(`CYCLE*0.2); i_rst_n = 1'b0;
         #(`CYCLE*1.5); i_rst_n = 1'b1;
@@ -70,11 +76,11 @@ module tb();
         #(`CYCLE*2); i_key_0 = 0;
 
         #(`CYCLE*40000);i_AUD_ADCDAT = 1;
-        #(`CYCLE*500); i_AUD_ADCDAT = 0;
-        #(`CYCLE*600); i_AUD_ADCDAT = 1;
-        #(`CYCLE*700); i_AUD_ADCDAT = 0;
-        #(`CYCLE*800); i_AUD_ADCDAT = 0;
-        #(`CYCLE*1000); i_key_0 = 1;
+        #(`CYCLE*1500); i_AUD_ADCDAT = 0;
+        #(`CYCLE*1600); i_AUD_ADCDAT = 1;
+        #(`CYCLE*1700); i_AUD_ADCDAT = 0;
+        #(`CYCLE*1800); i_AUD_ADCDAT = 0;
+        #(`CYCLE*2000); i_key_0 = 1;
         #(`CYCLE*1); i_key_0 = 0;
         #(`CYCLE*1000); i_key_0 = 1;
         #(`CYCLE*1); i_key_0 = 0;
@@ -82,6 +88,9 @@ module tb();
 
     always begin 
         #(`CYCLE * 0.5) i_clk = ~i_clk;
+    end
+    always begin
+        #(`CYCLE * 20) lrc = ~lrc;
     end
     // always begin 
     //     #(`CYCLE * 1) i_AUD_BCLK = ~i_AUD_BCLK;

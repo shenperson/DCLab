@@ -30,7 +30,7 @@ module Top (
 	// SEVENDECODER (optional display)
 	// output [5:0] o_record_time,
 	// output [5:0] o_play_time,
-	output [2:0] state
+	output [2:0] state,
 
 	// LCD (optional display)
 	// input        i_clk_800k,
@@ -44,6 +44,8 @@ module Top (
 	// LED
 	// output  [8:0] o_ledg,
 	// output [17:0] o_ledr
+
+	output [19:0] o_len
 );
 // design the FSM and states as you like
 parameter S_IDLE       = 0;
@@ -63,6 +65,7 @@ logic i2c_oen, i2c_sdat;
 logic recorder_start_r, recorder_start_w;
 logic recorder_pause_r, recorder_pause_w;
 logic recorder_stop_r, recorder_stop_w;
+logic [19:0] data_len;
 
 logic dsp_start_r, dsp_start_w;
 logic dsp_pause_r, dsp_pause_w;
@@ -108,6 +111,7 @@ I2cInitializer init0(
 AudDSP dsp0(
 	.i_rst_n(i_rst_n),
 	.i_clk(i_AUD_BCLK),
+	.i_len(data_len),
 	.i_start(dsp_start_r),
 	.i_pause(dsp_pause_r),
 	.i_stop(dsp_stop_r),
@@ -130,6 +134,7 @@ AudPlayer player0(
 	.i_en(player_en_r), // enable AudPlayer only when playing audio, work with AudDSP
 	.i_pause(player_pause_r),
 	.i_dac_data(dac_data), //dac_data
+	//.i_dac_data(data_record),
 	.o_aud_dacdat(o_AUD_DACDAT)
 );
 
@@ -144,7 +149,8 @@ AudRecorder recorder0(
 	.i_stop(recorder_stop_r),
 	.i_data(i_AUD_ADCDAT),
 	.o_address(addr_record),
-	.o_data(data_record)
+	.o_data(data_record),
+	.o_len(data_len)
 );
 
 always_comb begin
@@ -171,6 +177,7 @@ always_comb begin
 				state_w = S_RECD;
 				recorder_start_w = 1;
 				recorder_stop_w = 0;
+				//player_en_w = 1;
 			end
 		end
 		S_RECD: begin
