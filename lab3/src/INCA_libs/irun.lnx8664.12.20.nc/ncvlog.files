@@ -2,4 +2,5 @@
 // File created by:  ncverilog
 // Do not modify this file
 //
-/home/team02/lab3/src/AudPlayer_tb.sv
+/home/team02/lab3/src/AudDSP_tb.sv
+/home/team02/lab3/src/AudDSP.sv

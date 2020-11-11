@@ -4,7 +4,7 @@ module Top (
 	input i_key_0,
 	input i_key_1,
 	input i_key_2,
-	// input [3:0] i_speed, // design how user can decide mode on your own
+	input [6:0] i_SW,
 	
 	// AudDSP and SRAM
 	output [19:0] o_SRAM_ADDR,
@@ -76,6 +76,19 @@ logic [15:0] data_record, data_play, dac_data;
 logic player_en_r, player_en_w;
 logic player_pause_r, player_pause_w;
 
+// ============================================================== //
+// TODO : add signals to DE2_115
+logic [3:0] dsp_speed;
+logic       dsp_fast;
+logic       dsp_slow_0;
+logic       dsp_slow_1;
+
+assign dsp_speed  = i_SW[3:0];
+assign dsp_fast   = i_SW[4];
+assign dsp_slow_0 = i_SW[5];
+assign dsp_slow_1 = i_SW[6];
+// ============================================================== //
+
 assign state = state_r;
 
 assign io_I2C_SDAT = (i2c_oen) ? i2c_sdat : 1'bz;
@@ -89,9 +102,6 @@ assign o_SRAM_CE_N = 1'b0;
 assign o_SRAM_OE_N = 1'b0;
 assign o_SRAM_LB_N = 1'b0;
 assign o_SRAM_UB_N = 1'b0;
-
-// below is a simple example for module division
-// you can design these as you like
 
 // === I2cInitializer ===
 // sequentially sent out settings to initialize WM8731 with I2C protocal
@@ -110,15 +120,16 @@ I2cInitializer init0(
 // in other words, determine which data addr to be fetch for player 
 AudDSP dsp0(
 	.i_rst_n(i_rst_n),
-	.i_clk(i_AUD_BCLK),
+	// .i_clk(i_AUD_BCLK),
+	.i_clk(i_clk),
 	.i_len(data_len),
 	.i_start(dsp_start_r),
 	.i_pause(dsp_pause_r),
 	.i_stop(dsp_stop_r),
-	// .i_speed(),
-	// .i_fast(),
-	// .i_slow_0(), // constant interpolation
-	// .i_slow_1(), // linear interpolation
+	.i_speed(dsp_speed),
+	.i_fast(dsp_fast),
+	.i_slow_0(dsp_slow_0), // constant interpolation
+	.i_slow_1(dsp_slow_1), // linear interpolation
 	.i_daclrck(i_AUD_DACLRCK),
 	.i_sram_data(data_play),
 	.o_dac_data(dac_data),
@@ -167,106 +178,109 @@ always_comb begin
 	player_pause_w = player_pause_r;
 	case(state_r)
 		S_IDLE: begin
-			if(i_key_0) begin
+			if (i_key_0) begin
 				state_w = S_I2C;
 				i2c_start_w = 1;
 			end
 		end
+
 		S_I2C: begin
-			if(i2c_finished) begin
+			if (i2c_finished) begin
 				state_w = S_RECD;
 				recorder_start_w = 1;
 				recorder_stop_w = 0;
 				//player_en_w = 1;
 			end
 		end
+
 		S_RECD: begin
-			if(i_key_0) begin // stop
+			if (i_key_0) begin // stop
 				state_w = S_TUNE;
 				recorder_stop_w = 1;
 				recorder_start_w = 0;
 			end
-			else if(i_key_1) begin // pause
+			else if (i_key_1) begin // pause
 				state_w = S_RECD_PAUSE;
 				recorder_pause_w = 1;
 			end
 		end      
+
 		S_RECD_PAUSE: begin
-			if(i_key_0) begin
+			if (i_key_0) begin
 				state_w = S_TUNE;
 				recorder_pause_w = 0;
 				recorder_stop_w = 1;
 				recorder_start_w = 0;
 			end
-			else if(i_key_1) begin
+			else if (i_key_1) begin
 				state_w = S_RECD;
 				recorder_pause_w = 0;
 			end
 		end
+
 		S_TUNE: begin
-			if(i_key_0) begin
+			if (i_key_0) begin
 				state_w = S_PLAY;
 				player_en_w = 1;
 				dsp_start_w = 1;
 			end
 		end
+
 		S_PLAY: begin
-			if(i_key_0) begin
+			if (i_key_0) begin
 				state_w = S_IDLE;
 				player_en_w = 0;
 				dsp_stop_w = 1;
 				dsp_start_w = 0;
 			end
-			else if(i_key_1) begin
+			else if (i_key_1) begin
 				state_w = S_PLAY_PAUSE;
 				player_pause_w = 1;
 				dsp_pause_w = 1;
 			end
 		end
+		
 		S_PLAY_PAUSE: begin
-			if(i_key_0) begin
+			if (i_key_0) begin
 				state_w = S_IDLE;
 				player_en_w = 0;
 				player_pause_w = 0;
 				dsp_stop_w = 1;
 				dsp_start_w = 0;
 			end
-			else if(i_key_1) begin
+			else if (i_key_1) begin
 				state_w = S_PLAY;
 				player_pause_w = 0;
 				dsp_pause_w = 0;
 			end      
-		end
-		default: begin
-			
 		end
 	endcase
 end
 
 always_ff @(posedge i_clk or negedge i_rst_n) begin
 	if (!i_rst_n) begin
-		state_r <= S_IDLE;
-		i2c_start_r <= 0;
+		state_r          <= S_IDLE;
+		i2c_start_r      <= 0;
 		recorder_start_r <= 0;
 		recorder_pause_r <= 0;
-		recorder_stop_r <= 0;
-		dsp_start_r <= 0;
-		dsp_pause_r <= 0;
-		dsp_stop_r <= 0;
-		player_en_r <= 0;
-		player_pause_r <= 0;
+		recorder_stop_r  <= 0;
+		dsp_start_r      <= 0;
+		dsp_pause_r      <= 0;
+		dsp_stop_r       <= 0;
+		player_en_r      <= 0;
+		player_pause_r   <= 0;
 	end
 	else begin
-		state_r <= state_w;
-		i2c_start_r <= i2c_start_w;
+		state_r          <= state_w;
+		i2c_start_r      <= i2c_start_w;
 		recorder_start_r <= recorder_start_w;
 		recorder_pause_r <= recorder_pause_w;
-		recorder_stop_r <= recorder_stop_w;
-		dsp_start_r <= dsp_start_w;
-		dsp_pause_r <= dsp_pause_w;
-		dsp_stop_r <= dsp_stop_w;
-		player_en_r <= player_en_w;
-		player_pause_r <= player_pause_w;
+		recorder_stop_r  <= recorder_stop_w;
+		dsp_start_r      <= dsp_start_w;
+		dsp_pause_r      <= dsp_pause_w;
+		dsp_stop_r       <= dsp_stop_w;
+		player_en_r      <= player_en_w;
+		player_pause_r   <= player_pause_w;
 	end
 end
 

@@ -6,7 +6,7 @@
 1604653092 /home/team02/lab3/src/Top_tb.sv
 1604650483 /home/team02/lab3/src/Top.sv
 1604650483 /home/team02/lab3/src/AudRecorder.sv
-1604573897 /home/team02/lab3/src/AudDSP.sv
+1604992825 /home/team02/lab3/src/AudDSP.sv
 1604650483 /home/team02/lab3/src/AudPlayer.sv
-1603970220 /home/team02/lab3/src/AudDSP_tb.sv
+1604996870 /home/team02/lab3/src/AudDSP_tb.sv
 1604566277 /home/team02/lab3/src/AudDSP.fsdb

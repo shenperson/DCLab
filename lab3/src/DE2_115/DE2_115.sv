@@ -139,6 +139,7 @@ module DE2_115 (
 logic key0down, key1down, key2down, key3down;
 logic CLK_12M, CLK_100K, CLK_800K;
 logic [2:0] state;
+logic [19:0] o_len;
 
 assign AUD_XCK = CLK_12M;
 
@@ -172,13 +173,14 @@ Debounce deb2(
 	.o_neg(key2down) 
 );
 
+
 Top top0(
 	.i_rst_n(KEY[3]),
 	.i_clk(CLK_12M),
 	.i_key_0(key0down),
 	.i_key_1(key1down),
 	.i_key_2(key2down),
-	// .i_speed(SW[3:0]), // design how user can decide mode on your own
+	.i_SW(SW[6:0]),
 	
 	// AudDSP and SRAM
 	.o_SRAM_ADDR(SRAM_ADDR), // [19:0]
@@ -204,7 +206,7 @@ Top top0(
 	// SEVENDECODER (optional display)
 	// .o_record_time(recd_time),
 	// .o_play_time(play_time),
-	.state(state)
+	.state(state),
 
 	// LCD (optional display)
 	// .i_clk_800k(CLK_800K),
@@ -218,7 +220,10 @@ Top top0(
 	// LED
 	// .o_ledg(LEDG), // [8:0]
 	// .o_ledr(LEDR) // [17:0]
+	.o_len(o_len)
 );
+
+// assign AUD_DACDAT = AUD_ADCDAT;
 
 // SevenHexDecoder seven_dec0(
 // 	.i_num(play_time),
@@ -233,29 +238,29 @@ Top top0(
 // );
 SevenHexDecoder seven_dec0(
 	.i_hex(state),
-	.o_seven_ten(HEX1),
-	.o_seven_one(HEX0)
+	.o_seven_ten(HEX7),
+	.o_seven_one(HEX6)
 );
 
 SevenHexDecoder seven_dec1(
-	.i_hex(AUD_DACDAT),
-	.o_seven_ten(HEX3),
-	.o_seven_one(HEX2)
+	.i_hex(o_len[16:9]),
+	.o_seven_ten(HEX1),
+	.o_seven_one(HEX0)
 );
 // SevenHexDecoder seven_dec2(
-// 	.i_hex(SRAM_DQ[15:8]),
-// 	.o_seven_ten(HEX5),
+// 	.i_hex(),
+// 	.o_seven_ten(HEX),
 // 	.o_seven_one(HEX4)
 // );
-assign LEDG = {AUD_ADCDAT, 7'd0};
+// assign LEDG = {AUD_ADCDAT, 7'd0};
 // comment those are use for display
 // assign HEX0 = '1;
 // assign HEX1 = '1;
-// assign HEX2 = '1;
-// assign HEX3 = '1;
-// assign HEX4 = '1;
-// assign HEX5 = '1;
-assign HEX6 = '1;
-assign HEX7 = '1;
+assign HEX2 = '1;
+assign HEX3 = '1;
+assign HEX4 = '1;
+assign HEX5 = '1;
+// assign HEX6 = '1;
+// assign HEX7 = '1;
 
 endmodule

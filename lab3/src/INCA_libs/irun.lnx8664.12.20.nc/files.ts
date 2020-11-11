@@ -4,9 +4,9 @@
 1604645193 /home/team02/lab3/src/I2cSender.sv
 1604566277 /home/team02/lab3/src/AudRecorder_tb.sv
 1604653092 /home/team02/lab3/src/Top_tb.sv
-1604650483 /home/team02/lab3/src/Top.sv
-1604907878 /home/team02/lab3/src/AudRecorder.sv
-1604573897 /home/team02/lab3/src/AudDSP.sv
-1604919837 /home/team02/lab3/src/AudPlayer.sv
-1604566277 /home/team02/lab3/src/AudDSP_tb.sv
+1604996709 /home/team02/lab3/src/Top.sv
+1604920427 /home/team02/lab3/src/AudRecorder.sv
+1604992825 /home/team02/lab3/src/AudDSP.sv
+1604920427 /home/team02/lab3/src/AudPlayer.sv
+1604996870 /home/team02/lab3/src/AudDSP_tb.sv
 1604566277 /home/team02/lab3/src/AudDSP.fsdb
